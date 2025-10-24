@@ -9,11 +9,15 @@ import { FolderOpen, Plus, Search, Filter } from 'lucide-react'
 import Link from 'next/link'
 
 interface Project {
-  id: string
+  _id: string
   projectNumber: string
-  customerName: string
+  name: string
+  customerId: {
+    _id: string
+    name: string
+  }
   productType: 'storm' | 'sanitary' | 'electrical' | 'meter'
-  status: 'requested' | 'inprogress' | 'review' | 'approved' | 'production'
+  status: 'design' | 'engineering' | 'production' | 'completed'
   createdAt: string
   updatedAt: string
 }
@@ -44,20 +48,20 @@ export default function ProjectsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      requested: { variant: 'outline' as const, label: 'Requested' },
-      inprogress: { variant: 'default' as const, label: 'In Progress' },
-      review: { variant: 'secondary' as const, label: 'Under Review' },
-      approved: { variant: 'default' as const, label: 'Approved' },
-      production: { variant: 'secondary' as const, label: 'In Production' },
+      design: { className: 'bg-blue-100 text-blue-800', label: 'Design' },
+      engineering: { className: 'bg-purple-100 text-purple-800', label: 'Engineering' },
+      production: { className: 'bg-yellow-100 text-yellow-800', label: 'Production' },
+      completed: { className: 'bg-green-100 text-green-800', label: 'Completed' },
     }
     
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.requested
-    return <Badge variant={config.variant}>{config.label}</Badge>
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.design
+    return <Badge className={config.className}>{config.label}</Badge>
   }
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.projectNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+                         project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         project.customerId?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -110,11 +114,10 @@ export default function ProjectsPage() {
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="all">All Status</option>
-                <option value="requested">Requested</option>
-                <option value="inprogress">In Progress</option>
-                <option value="review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="production">In Production</option>
+                <option value="design">Design</option>
+                <option value="engineering">Engineering</option>
+                <option value="production">Production</option>
+                <option value="completed">Completed</option>
               </select>
             </div>
           </div>
@@ -124,12 +127,12 @@ export default function ProjectsPage() {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredProjects.map((project) => (
-          <Card key={project.id} className="hover:shadow-md transition-shadow">
+          <Card key={project._id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
                   <Link 
-                    href={`/projects/${project.id}`}
+                    href={`/projects/${project._id}`}
                     className="hover:text-primary"
                   >
                     {project.projectNumber}
@@ -137,13 +140,16 @@ export default function ProjectsPage() {
                 </CardTitle>
                 {getStatusBadge(project.status)}
               </div>
-              <CardDescription>{project.customerName}</CardDescription>
+              <CardDescription>{project.customerId?.name || 'Unknown Customer'}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-900 font-medium">
                   <FolderOpen className="mr-2 h-4 w-4" />
-                  {project.productType.charAt(0).toUpperCase() + project.productType.slice(1)}
+                  {project.name}
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  Type: {project.productType.charAt(0).toUpperCase() + project.productType.slice(1)}
                 </div>
                 <div className="text-sm text-gray-500">
                   Created {new Date(project.createdAt).toLocaleDateString()}
@@ -154,10 +160,7 @@ export default function ProjectsPage() {
               </div>
               <div className="mt-4 flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1" asChild>
-                  <Link href={`/projects/${project.id}`}>View</Link>
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  Edit
+                  <Link href={`/projects/${project._id}`}>View</Link>
                 </Button>
               </div>
             </CardContent>

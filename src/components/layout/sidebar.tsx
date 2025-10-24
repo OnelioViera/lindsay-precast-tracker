@@ -22,7 +22,7 @@ import { Tooltip } from '@/components/ui/tooltip'
 import { ProfileModal } from '@/components/profile-modal'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderOpen },
   { name: 'Library', href: '/library', icon: Library },
   { name: 'Customers', href: '/customers', icon: Users },
@@ -42,12 +42,12 @@ export default function Sidebar({ mobileMenuOpen, setMobileMenuOpen, collapsed, 
   const [profileModalOpen, setProfileModalOpen] = useState(false)
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/login' })
+    signOut({ callbackUrl: '/' })
   }
 
   const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
+    if (href === '/dashboard') {
+      return pathname === '/dashboard'
     }
     return pathname.startsWith(href)
   }
