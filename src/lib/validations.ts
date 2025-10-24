@@ -2,39 +2,33 @@
 // import { z } from 'zod';
 
 // Mock zod for CodeSandbox
+const mockSchema = () => ({
+  parse: (data: any) => data,
+  optional: () => mockSchema(),
+  partial: () => mockSchema(),
+  omit: (...args: any[]) => mockSchema(),
+  extend: (...args: any[]) => mockSchema(),
+  min: (...args: any[]) => mockSchema(),
+  max: (...args: any[]) => mockSchema(),
+  email: (...args: any[]) => mockSchema(),
+  regex: (...args: any[]) => mockSchema(),
+  length: (...args: any[]) => mockSchema(),
+  url: (...args: any[]) => mockSchema(),
+  positive: () => mockSchema(),
+});
+
 const z = {
-  object: (schema: any) => ({ 
-    parse: (data: any) => data, 
-    optional: () => {},
-    partial: () => ({ 
-      omit: (...args: any[]) => ({ extend: (...args: any[]) => ({}) }),
-      extend: (...args: any[]) => ({})
-    })
-  }),
-  string: () => ({ 
-    min: (...args: any[]) => ({ optional: () => {} }),
-    email: (...args: any[]) => ({ optional: () => {} }),
-    optional: () => {},
-    regex: (...args: any[]) => ({ optional: () => {} }),
-    length: (...args: any[]) => ({ optional: () => {} }),
-    url: (...args: any[]) => ({ optional: () => {} })
-  }),
-  email: (...args: any[]) => ({}),
-  number: () => ({ 
-    positive: () => ({ 
-      min: (...args: any[]) => ({ optional: () => {} }),
-      max: (...args: any[]) => ({ optional: () => {} }),
-      optional: () => {}
-    }),
-    optional: () => {}
-  }),
-  boolean: () => ({ optional: () => {} }),
-  enum: (...args: any[]) => ({ optional: () => {} }),
-  array: (...args: any[]) => ({ optional: () => {} }),
-  date: () => ({}),
-  instanceof: (...args: any[]) => ({}),
-  url: (...args: any[]) => ({ optional: () => {} }),
-  partial: () => ({ omit: () => ({ extend: () => ({}) }) }),
+  object: (schema: any) => mockSchema(),
+  string: () => mockSchema(),
+  email: (...args: any[]) => mockSchema(),
+  number: () => mockSchema(),
+  boolean: () => mockSchema(),
+  enum: (...args: any[]) => mockSchema(),
+  array: (...args: any[]) => mockSchema(),
+  date: () => mockSchema(),
+  instanceof: (...args: any[]) => mockSchema(),
+  url: (...args: any[]) => mockSchema(),
+  partial: () => mockSchema(),
   infer: (schema: any) => ({} as any)
 };
 

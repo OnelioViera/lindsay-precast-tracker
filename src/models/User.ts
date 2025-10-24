@@ -1,8 +1,6 @@
-// Temporarily disabled for CodeSandbox - replace with actual mongoose in production
-// import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IUser {
-  _id: string;
+export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
@@ -19,14 +17,60 @@ export interface IUser {
   lastLogin?: Date;
 }
 
-// Mock User model for CodeSandbox
-const User = {
-  find: () => Promise.resolve([]),
-  findById: () => Promise.resolve(null),
-  create: () => Promise.resolve({}),
-  findOne: () => Promise.resolve(null),
-  countDocuments: () => Promise.resolve(0),
-  findByIdAndDelete: () => Promise.resolve(null),
-};
+const UserSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+    },
+    role: {
+      type: String,
+      enum: ['designer', 'engineer', 'manager', 'production'],
+      default: 'designer',
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    avatar: {
+      type: String,
+    },
+    preferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      productionNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      weeklyReports: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    lastLogin: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Prevent model recompilation in development
+const User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
 export default User;

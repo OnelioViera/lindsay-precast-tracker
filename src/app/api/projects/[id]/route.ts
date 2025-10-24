@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import Customer from '@/models/Customer';
 import { projectUpdateSchema } from '@/lib/validations';
-import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -40,13 +39,20 @@ export async function GET(
     }
 
     // Role-based access check
-    if (session.user.role === 'designer' && 
-        project.createdBy.toString() !== session.user.id &&
-        project.assignedTo?.toString() !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      );
+    if (session.user.role === 'designer') {
+      const createdById = typeof (project as any).createdBy === 'object' 
+        ? (project as any).createdBy?._id?.toString() 
+        : (project as any).createdBy?.toString();
+      const assignedToId = typeof (project as any).assignedTo === 'object'
+        ? (project as any).assignedTo?._id?.toString()
+        : (project as any).assignedTo?.toString();
+      
+      if (createdById !== session.user.id && assignedToId !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Access denied' },
+          { status: 403 }
+        );
+      }
     }
 
     return NextResponse.json({
@@ -67,7 +73,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -89,18 +95,21 @@ export async function PATCH(
     }
 
     // Role-based access check
-    if (session.user.role === 'designer' && 
-        project.createdBy.toString() !== session.user.id &&
-        project.assignedTo?.toString() !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Access denied' },
-        { status: 403 }
-      );
+    if (session.user.role === 'designer') {
+      const createdById = (project as any).createdBy?.toString?.() || (project as any).createdBy;
+      const assignedToId = (project as any).assignedTo?.toString?.() || (project as any).assignedTo;
+      
+      if (createdById !== session.user.id && assignedToId !== session.user.id) {
+        return NextResponse.json(
+          { success: false, error: 'Access denied' },
+          { status: 403 }
+        );
+      }
     }
 
     // Update project
     Object.assign(project, validatedData);
-    await project.save();
+    await (project as any).save();
 
     return NextResponse.json({
       success: true,
@@ -132,7 +141,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

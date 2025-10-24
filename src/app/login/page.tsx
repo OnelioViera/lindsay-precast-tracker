@@ -31,7 +31,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid email or password')
       } else {
-        router.push('/dashboard')
+        router.push('/')
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
@@ -85,7 +85,7 @@ export default function LoginPage() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/register" className="text-primary hover:underline">
               Register here
             </Link>

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import LibraryTemplate from '@/models/LibraryTemplate';
 import { libraryTemplateSchema, searchFiltersSchema } from '@/lib/validations';
-import { authOptions } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -79,7 +78,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -87,8 +86,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only engineers and managers can create templates
-    if (!['engineer', 'manager'].includes(session.user.role)) {
+    // Only engineers, managers, and designers can create templates
+    if (!['engineer', 'manager', 'designer'].includes(session.user.role)) {
       return NextResponse.json(
         { success: false, error: 'Access denied' },
         { status: 403 }

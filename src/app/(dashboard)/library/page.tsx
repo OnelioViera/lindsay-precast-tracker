@@ -155,11 +155,11 @@ export default function LibraryPage() {
             <CardContent>
               <div className="space-y-3">
                 <div className="text-sm">
-                  <span className="font-medium">Dimensions:</span> {template.dimensions.length}' × {template.dimensions.width}' × {template.dimensions.height}'
+                  <span className="font-medium">Dimensions:</span> {template.dimensions.length}&apos; × {template.dimensions.width}&apos; × {template.dimensions.height}&apos;
                 </div>
                 {template.dimensions.wallThickness && (
                   <div className="text-sm">
-                    <span className="font-medium">Wall Thickness:</span> {template.dimensions.wallThickness}"
+                    <span className="font-medium">Wall Thickness:</span> {template.dimensions.wallThickness}&quot;
                   </div>
                 )}
                 <div className="text-sm">

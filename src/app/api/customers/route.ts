@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Customer from '@/models/Customer';
 import { customerSchema, searchFiltersSchema } from '@/lib/validations';
-import { authOptions } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -71,7 +70,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -79,8 +78,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only managers can create customers
-    if (session.user.role !== 'manager') {
+    // Only managers, engineers, and designers can create customers
+    if (!['manager', 'engineer', 'designer'].includes(session.user.role)) {
       return NextResponse.json(
         { success: false, error: 'Access denied' },
         { status: 403 }

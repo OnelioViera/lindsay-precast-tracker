@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import Customer from '@/models/Customer';
 import { projectSchema, searchFiltersSchema } from '@/lib/validations';
-import { authOptions } from '@/lib/auth';
 
 // Generate project number
 async function generateProjectNumber(): Promise<string> {
@@ -26,7 +25,7 @@ async function generateProjectNumber(): Promise<string> {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -120,7 +119,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

@@ -1,8 +1,6 @@
-// Temporarily disabled for CodeSandbox - replace with actual mongoose in production
-// import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface ICustomer {
-  _id: string;
+export interface ICustomer extends Document {
   name: string;
   contactInfo: {
     email: string;
@@ -25,20 +23,74 @@ export interface ICustomer {
     totalProjects: number;
     activeProjects: number;
     completedThisYear: number;
-    recentProjectIds: string[];
+    recentProjectIds: mongoose.Types.ObjectId[];
   };
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Mock Customer model for CodeSandbox
-const Customer = {
-  find: () => Promise.resolve([]),
-  findById: () => Promise.resolve(null),
-  create: () => Promise.resolve({}),
-  findOne: () => Promise.resolve(null),
-  countDocuments: () => Promise.resolve(0),
-  findByIdAndDelete: () => Promise.resolve(null),
-};
+const CustomerSchema = new Schema<ICustomer>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Customer name is required'],
+      trim: true,
+    },
+    contactInfo: {
+      email: {
+        type: String,
+        required: [true, 'Email is required'],
+        lowercase: true,
+        trim: true,
+      },
+      phone: {
+        type: String,
+        required: [true, 'Phone is required'],
+      },
+      address: {
+        street: String,
+        city: String,
+        state: String,
+        zipCode: String,
+      },
+    },
+    preferences: {
+      customSpecs: [String],
+      notes: String,
+      preferredProducts: [String],
+      requiresStampedDrawings: {
+        type: Boolean,
+        default: false,
+      },
+      expeditedTurnaround: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    projectHistory: {
+      totalProjects: {
+        type: Number,
+        default: 0,
+      },
+      activeProjects: {
+        type: Number,
+        default: 0,
+      },
+      completedThisYear: {
+        type: Number,
+        default: 0,
+      },
+      recentProjectIds: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+      }],
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const Customer = mongoose.models.Customer || mongoose.model<ICustomer>('Customer', CustomerSchema);
 
 export default Customer;

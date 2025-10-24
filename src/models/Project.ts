@@ -1,10 +1,8 @@
-// Temporarily disabled for CodeSandbox - replace with actual mongoose in production
-// import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IProject {
-  _id: string;
+export interface IProject extends Document {
   projectNumber: string;
-  customerId: string;
+  customerId: mongoose.Types.ObjectId;
   customerName: string;
   productType: 'storm' | 'sanitary' | 'electrical' | 'meter';
   status: 'requested' | 'inprogress' | 'review' | 'approved' | 'production';
@@ -16,20 +14,18 @@ export interface IProject {
     customNotes?: string;
   };
   drawings: {
-    _id: string;
     fileName: string;
     fileUrl: string;
     fileSize: number;
     version: number;
-    uploadedBy: string;
+    uploadedBy: mongoose.Types.ObjectId;
     uploadedAt: Date;
     mimeType: string;
   }[];
   timeTracking: {
     totalHours: number;
     entries: {
-      _id: string;
-      userId: string;
+      userId: mongoose.Types.ObjectId;
       startTime: Date;
       endTime: Date;
       duration: number;
@@ -37,12 +33,11 @@ export interface IProject {
     }[];
   };
   revisions: {
-    _id: string;
     revisionNumber: number;
     date: Date;
     description: string;
     requestedBy: string;
-    completedBy?: string;
+    completedBy?: mongoose.Types.ObjectId;
   }[];
   productionHandoff: {
     sentToProduction: boolean;
@@ -55,31 +50,117 @@ export interface IProject {
       productionNotesAdded: boolean;
     };
     rfis: {
-      _id: string;
       question: string;
-      askedBy: string;
+      askedBy: mongoose.Types.ObjectId;
       askedAt: Date;
       answer?: string;
-      answeredBy?: string;
+      answeredBy?: mongoose.Types.ObjectId;
       answeredAt?: Date;
       status: 'open' | 'answered';
     }[];
   };
-  createdBy: string;
-  assignedTo?: string;
+  createdBy: mongoose.Types.ObjectId;
+  assignedTo?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date;
 }
 
-// Mock Project model for CodeSandbox
-const Project = {
-  find: () => Promise.resolve([]),
-  findById: () => Promise.resolve(null),
-  create: () => Promise.resolve({}),
-  findOne: () => Promise.resolve(null),
-  countDocuments: () => Promise.resolve(0),
-  findByIdAndDelete: () => Promise.resolve(null),
-};
+const ProjectSchema = new Schema<IProject>(
+  {
+    projectNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    customerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Customer',
+      required: true,
+    },
+    customerName: {
+      type: String,
+      required: true,
+    },
+    productType: {
+      type: String,
+      enum: ['storm', 'sanitary', 'electrical', 'meter'],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ['requested', 'inprogress', 'review', 'approved', 'production'],
+      default: 'requested',
+    },
+    specifications: {
+      length: { type: Number, required: true },
+      width: { type: Number, required: true },
+      height: { type: Number, required: true },
+      wallThickness: Number,
+      customNotes: String,
+    },
+    drawings: [{
+      fileName: String,
+      fileUrl: String,
+      fileSize: Number,
+      version: Number,
+      uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+      uploadedAt: Date,
+      mimeType: String,
+    }],
+    timeTracking: {
+      totalHours: { type: Number, default: 0 },
+      entries: [{
+        userId: { type: Schema.Types.ObjectId, ref: 'User' },
+        startTime: Date,
+        endTime: Date,
+        duration: Number,
+        notes: String,
+      }],
+    },
+    revisions: [{
+      revisionNumber: Number,
+      date: Date,
+      description: String,
+      requestedBy: String,
+      completedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    }],
+    productionHandoff: {
+      sentToProduction: { type: Boolean, default: false },
+      handoffDate: Date,
+      checklist: {
+        drawingsFinalized: { type: Boolean, default: false },
+        specificationsVerified: { type: Boolean, default: false },
+        customerApprovalReceived: { type: Boolean, default: false },
+        materialListConfirmed: { type: Boolean, default: false },
+        productionNotesAdded: { type: Boolean, default: false },
+      },
+      rfis: [{
+        question: String,
+        askedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        askedAt: Date,
+        answer: String,
+        answeredBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        answeredAt: Date,
+        status: { type: String, enum: ['open', 'answered'], default: 'open' },
+      }],
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    assignedTo: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    completedAt: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const Project = mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema);
 
 export default Project;

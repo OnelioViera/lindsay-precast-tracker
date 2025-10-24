@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/lib/auth';
 import connectDB from '@/lib/db';
 import Project from '@/models/Project';
 import TimeEntry from '@/models/TimeEntry';
 import { timeTrackingActionSchema } from '@/lib/validations';
-import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -57,7 +56,7 @@ export async function POST(
       }
 
       // Create new time entry
-      const timeEntry = await TimeEntry.create({
+      const timeEntry: any = await TimeEntry.create({
         projectId: params.id,
         userId: session.user.id,
         startTime: new Date(),
@@ -77,7 +76,7 @@ export async function POST(
       });
     } else if (validatedData.action === 'stop') {
       // Find the running timer for this user
-      const runningEntry = await TimeEntry.findOne({
+      const runningEntry: any = await TimeEntry.findOne({
         userId: session.user.id,
         isRunning: true
       });

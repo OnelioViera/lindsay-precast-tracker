@@ -1,10 +1,8 @@
-// Temporarily disabled for CodeSandbox - replace with actual mongoose in production
-// import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface ITimeEntry {
-  _id: string;
-  projectId: string;
-  userId: string;
+export interface ITimeEntry extends Document {
+  projectId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   startTime: Date;
   endTime: Date;
   duration: number;
@@ -13,14 +11,41 @@ export interface ITimeEntry {
   createdAt: Date;
 }
 
-// Mock TimeEntry model for CodeSandbox
-const TimeEntry = {
-  find: () => Promise.resolve([]),
-  findById: () => Promise.resolve(null),
-  create: () => Promise.resolve({}),
-  findOne: () => Promise.resolve(null),
-  countDocuments: () => Promise.resolve(0),
-  findByIdAndDelete: () => Promise.resolve(null),
-};
+const TimeEntrySchema = new Schema<ITimeEntry>(
+  {
+    projectId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Project',
+      required: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    startTime: {
+      type: Date,
+      required: true,
+    },
+    endTime: {
+      type: Date,
+      required: true,
+    },
+    duration: {
+      type: Number,
+      required: true,
+    },
+    notes: String,
+    isRunning: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: { createdAt: true, updatedAt: false },
+  }
+);
+
+const TimeEntry = mongoose.models.TimeEntry || mongoose.model<ITimeEntry>('TimeEntry', TimeEntrySchema);
 
 export default TimeEntry;
